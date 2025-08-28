@@ -143,36 +143,50 @@ async function loadDataUnityweb(parts) {
 
       var script = document.createElement("script");
       script.src = loaderUrl;
-script.onload = async () => {
-    try {
-        // 下载并合并 .data 分片
-        const dataUrl = await loadDataUnityweb(dataParts);
+      script.onload = async () => {
+          try {
 
-        // 配置 Unity Loader
-        var config = {
-            dataUrl: dataUrl, // 这里使用合并后的 Blob URL
-            frameworkUrl: buildUrl + "/1.framework.js.unityweb",
-            codeUrl: buildUrl + "/1.wasm.unityweb",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "DefaultCompany",
-            productName: "ChuNengGuiMoHua",
-            productVersion: "0.1",
-            showBanner: unityShowBanner,
-        };
+              // 【添加】开始加载时的弹窗提示
+              alert("因服务器原因第一次资源下载较慢，请您耐心等待！");
 
-        createUnityInstance(canvas, config, (progress) => {
-            progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-            loadingBar.style.display = "none";
-            fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
-        }).catch((message) => {
-            alert(message);
-        });
+              // 下载并合并 .data 分片
+              const dataUrl = await loadDataUnityweb(dataParts);
 
-    } catch(e) {
-        alert("Error loading Unity data: " + e);
-    }
-};
+              // 配置 Unity Loader
+              var config = {
+                  dataUrl: dataUrl, // 这里使用合并后的 Blob URL
+                  frameworkUrl: buildUrl + "/1.framework.js.unityweb",
+                  codeUrl: buildUrl + "/1.wasm.unityweb",
+                  streamingAssetsUrl: "StreamingAssets",
+                  companyName: "DefaultCompany",
+                  productName: "ChuNengGuiMoHua",
+                  productVersion: "0.1",
+                  showBanner: unityShowBanner,
+              };
+
+              createUnityInstance(canvas, config, (progress) => {
+                  progressBarFull.style.width = 100 * progress + "%";
+
+            // 【添加】加载进度中的提示（可选）
+            var percentage = Math.round(progress * 100);
+            if (percentage === 50 && !window.halfwayAlertShown) {
+                alert("已加载50%，请继续等待...");
+                window.halfwayAlertShown = true;
+            }
+
+
+
+              }).then((unityInstance) => {
+                  loadingBar.style.display = "none";
+                  fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
+              }).catch((message) => {
+                  alert("游戏加载失败，请刷新页面重试！\n错误信息：" + message);
+              });
+
+          } catch(e) {
+              alert("资源文件加载失败，请检查网络连接并刷新页面重试！\n错误信息：" + e);
+          }
+      };
 
       document.body.appendChild(script);
     </script>
