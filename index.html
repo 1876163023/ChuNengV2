@@ -270,7 +270,7 @@ async function loadDataUnityweb(parts) {
 
 // 页面加载完成后立即显示弹窗
 document.addEventListener('DOMContentLoaded', function() {
-    alert("因服务器原因，第一次加载速度较慢，请您耐心等待！");
+
 });
 
 // // 备用方案：如果DOMContentLoaded已经触发
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 【添加】加载进度中的提示（可选）
             var originalPercentage = Math.round(progress * 100);
             if (originalPercentage === 50 && !window.halfwayAlertShown) {
-                alert("已加载50%，请继续等待...");
+
                 window.halfwayAlertShown = true;
             }
 
