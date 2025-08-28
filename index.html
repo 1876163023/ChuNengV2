@@ -6,8 +6,119 @@
     <title>Unity WebGL Player | ChuNengGuiMoHua</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    
+    <!-- 【添加】自定义加载界面样式 -->
+    <style>
+        /* 自定义加载界面 */
+        #custom-loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('loading-background.jpg'); /* 替换为你的背景图片路径 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            z-index: 9999;
+            padding-bottom: 100px;
+        }
+        
+        /* 进度条容器 */
+        .progress-container {
+            width: 60%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 25px;
+            padding: 8px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 进度条填充 */
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        /* 进度条光泽效果 */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 进度文字 */
+        .progress-text {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* 百分比文字 */
+        .progress-percentage {
+            text-align: center;
+            color: white;
+            font-size: 16px;
+            margin-top: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Unity容器初始隐藏 */
+        #unity-container {
+            display: none;
+        }
+        
+        /* 显示Unity容器时的样式 */
+        #unity-container.show {
+            display: block;
+        }
+    </style>
   </head>
   <body>
+    <!-- 【添加】自定义加载界面 -->
+    <div id="custom-loading-screen">
+        <div class="progress-text" id="progress-text">正在准备资源...</div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        <div class="progress-percentage" id="progress-percentage">0%</div>
+    </div>
+
+    <!-- 【原有代码保持不变】 -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=1920 height=1080></canvas>
       <div id="unity-loading-bar">
@@ -30,6 +141,12 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
+
+      // 【添加】获取自定义进度显示元素
+      var customLoadingScreen = document.getElementById('custom-loading-screen');
+      var progressFill = document.getElementById('progress-fill');
+      var progressPercentage = document.getElementById('progress-percentage');
+      var progressText = document.getElementById('progress-text');
 
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
@@ -68,8 +185,6 @@
         showBanner: unityShowBanner,
       };
 
-
-
 // 分片列表（按上传顺序列出所有 .data 分片）
 var dataParts = [
     buildUrl + "/1.data.part0",
@@ -78,12 +193,18 @@ var dataParts = [
     // 依次添加所有分片
 ];
 
-// 分片下载并合并函数
+// 【修改】分片下载并合并函数 - 添加进度显示
 async function loadDataUnityweb(parts) {
     let totalLength = 0;
     let buffers = [];
 
     for (let i = 0; i < parts.length; i++) {
+        // 【修改】更新自定义进度显示
+        var partProgress = Math.round((i / parts.length) * 15); // 数据下载占总进度的15%
+        progressFill.style.width = partProgress + "%";
+        progressPercentage.textContent = partProgress + "%";
+        progressText.textContent = "正在下载数据分片 " + (i+1) + "/" + parts.length;
+        
         unityShowBanner("Loading data part " + (i+1) + "/" + parts.length, "warning");
         const response = await fetch(parts[i]);
         if (!response.ok) throw new Error("Failed to load " + parts[i]);
@@ -93,6 +214,10 @@ async function loadDataUnityweb(parts) {
     }
 
     // 合并
+    progressText.textContent = "正在合并数据文件...";
+    progressFill.style.width = "18%";
+    progressPercentage.textContent = "18%";
+    
     const merged = new Uint8Array(totalLength);
     let offset = 0;
     for (let buf of buffers) {
@@ -101,14 +226,13 @@ async function loadDataUnityweb(parts) {
     }
 
     const blob = new Blob([merged], { type: 'application/octet-stream' });
+    
+    progressText.textContent = "数据准备完成，开始加载游戏...";
+    progressFill.style.width = "20%";
+    progressPercentage.textContent = "20%";
+    
     return URL.createObjectURL(blob);
 }
-
-
-
-
-
-
 
       // By default Unity keeps WebGL canvas render target size matched with
       // the DOM size of the canvas element (scaled by window.devicePixelRatio)
@@ -144,7 +268,6 @@ async function loadDataUnityweb(parts) {
       var script = document.createElement("script");
       script.src = loaderUrl;
 
-
 // 页面加载完成后立即显示弹窗
 document.addEventListener('DOMContentLoaded', function() {
     alert("因服务器原因，第一次加载速度较慢，请您耐心等待！");
@@ -159,9 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
 //     // DOM已经加载完成
 //     alert("资源加载较慢，请耐心等待！");
 // }
-
-
-
 
       script.onload = async () => {
           try {
@@ -185,26 +305,61 @@ document.addEventListener('DOMContentLoaded', function() {
               };
 
               createUnityInstance(canvas, config, (progress) => {
+                  // 【修改】更新自定义进度条，Unity进度映射到20%-100%区间
+                  var adjustedProgress = 20 + (progress * 80);
+                  var percentage = Math.round(adjustedProgress);
+                  
+                  progressFill.style.width = percentage + "%";
+                  progressPercentage.textContent = percentage + "%";
+                  
+                  // 根据进度更新提示文字
+                  if (percentage < 40) {
+                      progressText.textContent = "正在下载核心文件...";
+                  } else if (percentage < 70) {
+                      progressText.textContent = "正在加载游戏资源...";
+                  } else if (percentage < 95) {
+                      progressText.textContent = "正在初始化游戏...";
+                  } else {
+                      progressText.textContent = "即将完成...";
+                  }
+                  
+                  // 【保持原有代码】
                   progressBarFull.style.width = 100 * progress + "%";
 
             // 【添加】加载进度中的提示（可选）
-            var percentage = Math.round(progress * 100);
-            if (percentage === 50 && !window.halfwayAlertShown) {
+            var originalPercentage = Math.round(progress * 100);
+            if (originalPercentage === 50 && !window.halfwayAlertShown) {
                 alert("已加载50%，请继续等待...");
                 window.halfwayAlertShown = true;
             }
 
-
-
               }).then((unityInstance) => {
+                  // 【修改】加载完成，隐藏自定义加载界面，显示游戏
+                  customLoadingScreen.style.display = 'none';
+                  container.classList.add('show');
                   loadingBar.style.display = "none";
+                  
                   fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
               }).catch((message) => {
-                  alert("游戏加载失败，请刷新页面重试！\n错误信息：" + message);
+                  // 【修改】显示错误状态
+                  progressText.textContent = "加载失败";
+                  progressFill.style.background = "#f44336";
+                  progressPercentage.textContent = "错误";
+                  
+                  setTimeout(() => {
+                      alert("游戏加载失败，请刷新页面重试！\n错误信息：" + message);
+                  }, 500);
               });
 
           } catch(e) {
-              alert("资源文件加载失败，请检查网络连接并刷新页面重试！\n错误信息：" + e);
+              // 【修改】显示错误状态
+              progressText.textContent = "资源下载失败";
+              progressFill.style.background = "#f44336";
+              progressPercentage.textContent = "错误";
+              
+              setTimeout(() => {
+                  alert("资源文件加载失败，请检查网络连接并刷新页面重试！\n错误信息：" + e);
+              }, 500);
           }
       };
 
