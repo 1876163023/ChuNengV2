@@ -6,7 +6,9 @@
     <title>Unity WebGL Player | ChuNengGuiMoHua</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    
+
+
+
     <!-- 【添加】自定义加载界面样式 -->
     <style>
         /* 自定义加载界面 */
@@ -118,7 +120,7 @@
         <div class="progress-percentage" id="progress-percentage">0%</div>
     </div>
 
-    <!-- 【原有代码保持不变】 -->
+        <!-- 【原有代码保持不变】 -->
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=1920 height=1080></canvas>
       <div id="unity-loading-bar">
@@ -142,7 +144,8 @@
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
       var warningBanner = document.querySelector("#unity-warning");
 
-      // 【添加】获取自定义进度显示元素
+
+            // 【添加】获取自定义进度显示元素
       var customLoadingScreen = document.getElementById('custom-loading-screen');
       var progressFill = document.getElementById('progress-fill');
       var progressPercentage = document.getElementById('progress-percentage');
@@ -185,7 +188,9 @@
         showBanner: unityShowBanner,
       };
 
-// 分片列表（按上传顺序列出所有 .data 分片）
+
+
+      // 分片列表（按上传顺序列出所有 .data 分片）
 var dataParts = [
     buildUrl + "/1.data.part0",
     buildUrl + "/1.data.part1",
@@ -267,6 +272,8 @@ async function loadDataUnityweb(parts) {
 
       var script = document.createElement("script");
       script.src = loaderUrl;
+
+
 
 // 页面加载完成后立即显示弹窗
 document.addEventListener('DOMContentLoaded', function() {
