@@ -90,18 +90,6 @@ async function loadDataUnityweb(parts) {
         const arrayBuffer = await response.arrayBuffer();
         buffers.push(arrayBuffer);
         totalLength += arrayBuffer.byteLength;
-        if(i=0)
-        {
-                alert("正在下载完第1个分包，请耐心等待...");
-        }
-         if(i=1)
-        {
-                alert("正在下载完第2个分包，请耐心等待...");
-        }
-        if(i=2)
-        {
-                alert("正在下载完第3个分包，请耐心等待...");
-        }
     }
 
     // 合并
@@ -162,15 +150,15 @@ document.addEventListener('DOMContentLoaded', function() {
     alert("因服务器原因，第一次加载速度较慢，请您耐心等待！");
 });
 
-// 备用方案：如果DOMContentLoaded已经触发
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        alert("资源正在下载中");
-    });
-} else {
-    // DOM已经加载完成
-    alert("资源加载较慢，请耐心等待！");
-}
+// // 备用方案：如果DOMContentLoaded已经触发
+// if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', function() {
+//         alert("资源正在下载中");
+//     });
+// } else {
+//     // DOM已经加载完成
+//     alert("资源加载较慢，请耐心等待！");
+// }
 
 
 
