@@ -273,21 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-// // 备用方案：如果DOMContentLoaded已经触发
-// if (document.readyState === 'loading') {
-//     document.addEventListener('DOMContentLoaded', function() {
-//         alert("资源正在下载中");
-//     });
-// } else {
-//     // DOM已经加载完成
-//     alert("资源加载较慢，请耐心等待！");
-// }
 
       script.onload = async () => {
           try {
-
-              // 【添加】开始加载时的弹窗提示
-              //alert("因服务器原因第一次资源下载较慢，请您耐心等待！");
 
               // 下载并合并 .data 分片
               const dataUrl = await loadDataUnityweb(dataParts);
